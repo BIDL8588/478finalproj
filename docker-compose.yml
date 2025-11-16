@@ -1,0 +1,5 @@
+services: 
+  crack-hash: 
+    build: .
+    container_name: crack_test_hash
+    command: tail -f /dev/null
