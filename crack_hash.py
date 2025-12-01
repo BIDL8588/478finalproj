@@ -13,7 +13,7 @@ from hash_password import hash_pass
 
 def dictionary_crack(hash_val, algorithm = "sha256"):
   try: 
-      with open("data/dictionary.txt", "r") as file: 
+      with open("data/raw_passwords.txt", "r") as file: 
           for word in file: 
             word = word.strip()
 
