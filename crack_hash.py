@@ -41,14 +41,7 @@ def brute_force(hash_val, algorithm = "sha256", max_len = 7):
 
 def crack_single(hash_value, algorithm = "sha256"): 
   result = dictionary_crack(hash_value, algorithm)
-  if result: 
-    return result
-
-  result = brute_force(hash_value, algorithm) 
-  if result: 
-    return result
-
-  return None
+  return result
 
 def crack_hfile(hashed_file, output_file, algorithm = "sha256"): 
   results = []
