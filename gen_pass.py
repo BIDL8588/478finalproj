@@ -54,9 +54,28 @@ def save_pword(output_file, quantity):
 
   print(f"Saved {quantity} passwords to {output_file}")
 
+def common_pwords(file_path):
+  common_pass = [
+      "attack12","star22","cool12","doggy7","tiger5","lover1",
+        "sunny8","red123","blue44","catcat","qwer12","zxcv55",
+        "simple7","pass12","test11","hello7","mine3","key123",
+        "house7","light6","mike22","luna77","rock55","john88",
+        "admin5","user11","coco1","baby77","rain22","frog66",
+        "luck77","tree3","ghost7","tiny12","bear22","sky987",
+        "love99","cute5","note23","jump44"
+  ]
+    
+    
+  with open(file_path, "a") as file: 
+    for pword in common_pass: 
+      file.write(pword + "\n")
+
+  print("Added common weak passwords to the file")
 
 if __name__ == "__main__": 
-  save_pword("data/raw_passwords.txt", 100)
+  output = "data/raw_passwords.txt"
+  save_pword(output, 100)
+  common_pwords(output)
 
     
     
