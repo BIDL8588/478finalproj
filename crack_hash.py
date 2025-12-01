@@ -25,10 +25,15 @@ def dictionary_crack(hash_val, algorithm = "sha256"):
 
 def brute_force(hash_val, algorithm = "sha256", max_len = 7): 
   low = string.ascii_lowercase
-
+  count = 0
+    
   for length in range(1, max_len + 1):
     for i in itertools.product(low, repeat = length): 
       guess = "".join(i)
+      count += 1
+
+      if count % 1000 == 0: 
+          print(f" Tried {attempts} guess so far...(current = {guess})")
 
       if hash_pass(guess, algorithm) == hash_val: 
         return guess
