@@ -13,7 +13,7 @@ from hash_password import hash_pass
 
 def dictionary_crack(hash_val, algorithm = "sha256"):
   try: 
-      with open("data/raw_passwords.txt", "r") as file: 
+      with open("data/dictionary.txt", "r") as file: 
           for word in file: 
             word = word.strip()
 
@@ -33,7 +33,7 @@ def brute_force(hash_val, algorithm = "sha256", max_len = 7):
       count += 1
 
       if count % 1000 == 0: 
-          print(f" Tried {attempts} guess so far...(current = {guess})")
+          print(f" Tried {count} guess so far...(current = {guess})")
 
       if hash_pass(guess, algorithm) == hash_val: 
         return guess
@@ -41,7 +41,9 @@ def brute_force(hash_val, algorithm = "sha256", max_len = 7):
 
 def crack_single(hash_value, algorithm = "sha256"): 
   result = dictionary_crack(hash_value, algorithm)
-  return result
+  if result: 
+      return result
+  return brute_force(hash_value, algorithm, max_len = 4)
 
 def crack_hfile(hashed_file, output_file, algorithm = "sha256"): 
   results = []
