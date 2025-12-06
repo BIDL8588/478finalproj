@@ -1,6 +1,7 @@
 import time
+import sys
+
 from crack_hash import dictionary_crack, brute_force
-from hash_password import hash_pass
 
 
 def analyze_hashes(input_file, output_file, algorithm="sha256",
@@ -10,8 +11,8 @@ def analyze_hashes(input_file, output_file, algorithm="sha256",
     total = 0
     cracked = 0
 
-    dict_total_time = 0
-    brute_total_time = 0
+    dict_time_total = 0.0
+    brute_time_total = 0.0
 
     with open(input_file, "r") as file:
         for line in file:
@@ -22,58 +23,80 @@ def analyze_hashes(input_file, output_file, algorithm="sha256",
 
             original, hash_val = line.split(",", 1)
             hash_val = hash_val.strip()
-
             total += 1
-            found = None
 
-            # -------------------------
-            # DICTIONARY CRACKING TEST
-            # -------------------------
+            # --- Dictionary cracking ---
+            found = None
             if use_dict:
                 start = time.time()
                 found = dictionary_crack(hash_val, algorithm)
                 dt = time.time() - start
-                dict_total_time += dt
+                dict_time_total += dt
 
                 if found:
                     cracked += 1
-                    results.append(f"{hash_val} = {found}   (dictionary: {dt:.4f}s)")
+                    results.append(f"{hash_val} = {found}  (dictionary: {dt:.4f}s)")
                     continue
 
-            # -------------------------
-            # BRUTE FORCE TEST
-            # -------------------------
+            # --- Brute force cracking ---
             if use_brute:
                 start = time.time()
                 found = brute_force(hash_val, algorithm, max_len=4)
                 bt = time.time() - start
-                brute_total_time += bt
+                brute_time_total += bt
 
                 if found:
                     cracked += 1
-                    results.append(f"{hash_val} = {found}   (bruteforce: {bt:.4f}s)")
+                    results.append(f"{hash_val} = {found}  (bruteforce: {bt:.4f}s)")
                 else:
-                    results.append(f"{hash_val} = Not found")
+                    results.append(f"{hash_val} = Not Found")
 
-    # ------------------------
-    # SUMMARY SECTION
-    # ------------------------
-    results.append("\n=========== SUMMARY ===========")
+    # ---- Summary Block ----
+    results.append("\n================ SUMMARY ================")
     results.append(f"Total Hashes: {total}")
     results.append(f"Cracked: {cracked}")
-    if total > 0:
-        results.append(f"Success Rate: {cracked / total * 100:.2f}%")
+    results.append(f"Success Rate: {(cracked / total) * 100:.2f}%")
 
     if use_dict:
-        results.append(f"Avg Dictionary Time: {dict_total_time / max(total,1):.4f}s")
+        avg = dict_time_total / max(total, 1)
+        results.append(f"Avg Dictionary Time: {avg:.4f}s")
 
     if use_brute:
-        results.append(f"Avg Brute-Force Time: {brute_total_time / max(total,1):.4f}s")
+        avg = brute_time_total / max(total, 1)
+        results.append(f"Avg BruteForce Time: {avg:.4f}s")
 
-    # SAVE
-    with open(output_file, "w") as file:
+    # ---- Save Output ----
+    with open(output_file, "w") as f:
         for r in results:
-            file.write(r + "\n")
+            f.write(r + "\n")
 
-    print(f"Analysis saved to {output_file}")
+    print(f"Analysis saved → {output_file}")
 
+
+if __name__ == "__main__":
+
+    if len(sys.argv) < 4:
+        print("Usage:")
+        print("  python results.py <hashed_file> <output_file> <mode>")
+        print("Modes: dict | brute | both")
+        sys.exit(1)
+
+    hashed_file = sys.argv[1]
+    output = sys.argv[2]
+    mode = sys.argv[3].lower()
+
+    if mode == "dict":
+        use_dict = True
+        use_brute = False
+    elif mode == "brute":
+        use_dict = False
+        use_brute = True
+    elif mode == "both":
+        use_dict = True
+        use_brute = True
+    else:
+        print("Error: mode must be dict, brute, or both")
+        sys.exit(1)
+
+    analyze_hashes(hashed_file, output, algorithm="sha256",
+                   use_dict=use_dict, use_brute=use_brute)
