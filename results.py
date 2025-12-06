@@ -1,36 +1,45 @@
 import hashlib
 from utils import load_hashes, save_table
 from crack_hash import crack_single
+import time
 
-def an_results(hashed_file, output_file, algorithm = "sha256"): 
-  hashed = load_hashes(hashed_file)
-  sum_tot = []
-  count = 0
-  total = len(hashed)
-  print(f"analysis on {total} hashed passwords...")
-  for i in hashed: 
-    password = crack_single(i , algorithm)
+def an_results(hashed_file, output_file, algorithm="sha256"):
+    hashes = load_hashes(hashed_file)
 
-    if password: 
-      count += 1
-      sum_tot.append(f"{i} = {password}")
-    else: 
-      sum_tot.append(f"{i} = Not Cracked")
+    summary_lines = []
+    cracked_count = 0
+    total = len(hashes)
 
-  rate = (count/total) * 100
-  sum_tot.append("\n================SUMMARY================")
-  sum_tot.append(f"Total Hashes: {total}")
-  sum_tot.append(f"Cracked: {count}")
-  sum_tot.append(f"Success Rate: {rate:.2f}%")
-  save_table(sum_tot, output_file)
+    print(f"Starting analysis on {total} hashed passwords...\n")
 
-  print(f"analysis done. Saved results to {output_file}")
+    for h in hashes:
+        start = time.time()
+        result = crack_single(h, algorithm, use_dict=True, use_brute=False)
+        elapsed = time.time() - start
 
-if __name__ == "__main__": 
-  an_results(
-      hashed_file = "data/hashed_passwords.txt",
-      output_file = "data/analysis_summary.txt",
-      algorithm = "sha256"
-)
+        if result:
+            cracked_count += 1
+            summary_lines.append(f"{h} = {result}   (time: {elapsed:.4f} sec)")
+        else:
+            summary_lines.append(f"{h} = Not Cracked   (time: {elapsed:.4f} sec)")
+
+    success_rate = (cracked_count / total) * 100
+
+    summary_lines.append("\n============== SUMMARY ==============")
+    summary_lines.append(f"Total Hashes: {total}")
+    summary_lines.append(f"Cracked: {cracked_count}")
+    summary_lines.append(f"Success Rate: {success_rate:.2f}%")
+    summary_lines.append("====================================")
+
+    save_table(summary_lines, output_file)
+
+    print(f"Analysis complete. Saved results to {output_file}")
+
+if __name__ == "__main__":
+    an_results(
+        hashed_file="data/hashed_dictionary.txt",
+        output_file="data/analysis_summary.txt",
+        algorithm="sha256"
+    )
 
 
