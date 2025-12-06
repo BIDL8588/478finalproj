@@ -1,45 +1,64 @@
-import hashlib
-from utils import load_hashes, save_table
-from crack_hash import crack_single
 import time
+from crack_hash import dictionary_crack, brute_force
+from hash_password import hash_pass
 
-def an_results(hashed_file, output_file, algorithm="sha256"):
-    hashes = load_hashes(hashed_file)
+def analyze_hashes(input_file, output_file, algorithm="sha256", use_dict=True, use_brute=True):
 
-    summary_lines = []
-    cracked_count = 0
-    total = len(hashes)
+    results = []
+    total = 0
+    cracked = 0
+    dict_time_total = 0
+    brute_time_total = 0
 
-    print(f"Starting analysis on {total} hashed passwords...\n")
+    with open(input_file, "r") as file:
+        for line in file:
+            line = line.strip()
+            if "," in line:
+                original, hash_val = line.split(",", 1)
+                hash_val = hash_val.strip()
+            else:
+                continue
 
-    for h in hashes:
-        start = time.time()
-        result = crack_single(h, algorithm, use_dict=True, use_brute=False)
-        elapsed = time.time() - start
+            total += 1
+            found = None
 
-        if result:
-            cracked_count += 1
-            summary_lines.append(f"{h} = {result}   (time: {elapsed:.4f} sec)")
-        else:
-            summary_lines.append(f"{h} = Not Cracked   (time: {elapsed:.4f} sec)")
+            if use_dict:
+                start = time.time()
+                found = dictionary_crack(hash_val, algorithm)
+                dt = time.time() - start
+                dict_time_total += dt
 
-    success_rate = (cracked_count / total) * 100
+                if found:
+                    cracked += 1
+                    results.append(f"{hash_val} = {found}  (dictionary: {dt:.4f}s)")
+                    continue
 
-    summary_lines.append("\n============== SUMMARY ==============")
-    summary_lines.append(f"Total Hashes: {total}")
-    summary_lines.append(f"Cracked: {cracked_count}")
-    summary_lines.append(f"Success Rate: {success_rate:.2f}%")
-    summary_lines.append("====================================")
+            if use_brute:
+                start = time.time()
+                found = brute_force(hash_val, algorithm, max_len=4)
+                bt = time.time() - start
+                brute_time_total += bt
 
-    save_table(summary_lines, output_file)
+                if found:
+                    cracked += 1
+                    results.append(f"{hash_val} = {found}  (bruteforce: {bt:.4f}s)")
+                else:
+                    results.append(f"{hash_val} = Not Found")
+    results.append("\n================ SUMMARY ================")
+    results.append(f"Total Hashes: {total}")
+    results.append(f"Cracked: {cracked}")
+    results.append(f"Success Rate: {cracked/total * 100:.2f}%")
 
-    print(f"Analysis complete. Saved results to {output_file}")
+    if use_dict:
+        results.append(f"Avg Dictionary Time: {dict_time_total/max(total,1):.4f}s")
 
-if __name__ == "__main__":
-    an_results(
-        hashed_file="data/hashed_dictionary.txt",
-        output_file="data/analysis_summary.txt",
-        algorithm="sha256"
-    )
+    if use_brute:
+        results.append(f"Avg BruteForce Time: {brute_time_total/max(total,1):.4f}s")
+
+    with open(output_file, "w") as file:
+        for r in results:
+            file.write(r + "\n")
+
+    print(f"Analysis saved -> {output_file}")
 
 
