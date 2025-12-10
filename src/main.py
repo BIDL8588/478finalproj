@@ -17,7 +17,7 @@ def main():
 
     os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
-    print("\n[+] Step 1: Generating Synthetic Dataset...")
+    print("\nStep 1: Generating Synthetic Dataset...")
     gen = PasswordGenerator()
     passwords = gen.generate_dataset(count=50)
     
@@ -25,13 +25,13 @@ def main():
     print(f"    - Generated {len(passwords)} passwords.")
     print(f"    - Saved raw list to {RAW_PASSWORDS_FILE}")
 
-    print("\n[+] Step 2: Hashing Passwords...")
+    print("\nStep 2: Hashing Passwords...")
     target_algo = "sha256"
     hashed_data = Hasher.process_file(RAW_PASSWORDS_FILE, HASHED_PASSWORDS_FILE, algo=target_algo)
     print(f"    - Hashed {len(hashed_data)} passwords using {target_algo}.")
     print(f"    - Saved hash list to {HASHED_PASSWORDS_FILE}")
 
-    print(f"\n[+] Step 3: Initializing Attack Engine ({target_algo})...")
+    print(f"\nStep 3: Initializing Attack Engine ({target_algo})...")
     cracker = Cracker()
     results = []
 
@@ -62,7 +62,7 @@ def main():
     total_time = time.time() - start_total
     print(f"    - Attack phase complete in {round(total_time, 2)} seconds.")
 
-    print("\n[+] Step 4: Generating Final Report...")
+    print("\nStep 4: Generating Final Report...")
     df = pd.DataFrame(results)
     
     total_cracked = df[df['cracked'] == True].shape[0]
@@ -82,3 +82,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
